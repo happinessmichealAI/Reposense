@@ -276,6 +276,9 @@ const styles = {
     flex: 1,
     position: 'relative',
     overflow: 'hidden',
+    width: '100%',
+    height: 'calc(100vh - 60px)',
+    minHeight: '500px',
   },
   bottomHint: {
     position: 'absolute',
