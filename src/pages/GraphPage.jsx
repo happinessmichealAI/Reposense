@@ -17,8 +17,8 @@ export default function GraphPage() {
   useEffect(() => {
     // Check if demo mode from Loading page
     if (location.state?.demo) {
-      // Use demo data from Graph component
-      setGraphData({ nodes: [], links: [], demoMode: true });
+      // Set graphData to a special marker so Graph component uses its built-in demo data
+      setGraphData({ demoMode: true });
       setRepoName('demo/repository');
       setIsDemoMode(true);
       return;
@@ -127,8 +127,7 @@ export default function GraphPage() {
       {/* Graph Canvas */}
       <div style={styles.graphCanvas} className="graph-canvas">
         <Graph
-          nodes={graphData.nodes}
-          links={graphData.links}
+          {...(graphData.nodes && graphData.links ? { nodes: graphData.nodes, links: graphData.links } : {})}
           repoName={repoName}
           riskFilter={riskFilter}
           onNodeClick={handleNodeClick}
