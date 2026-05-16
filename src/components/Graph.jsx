@@ -173,20 +173,26 @@ export default function Graph({
 
   // ── D3 EFFECT ──────────────────────────────────────────────
   useEffect(() => {
-    const container = svgRef.current;
-    if (!container) return;
+    // FIX #1: Add delay to ensure DOM layout is complete before D3 initializes
+    const timer = setTimeout(() => {
+      const container = svgRef.current;
+      if (!container) return;
 
-    const W = container.clientWidth  || window.innerWidth;
-    const H = container.clientHeight || window.innerHeight;
+      // FIX #2: Enhanced dimension fallback with getBoundingClientRect
+      const W = container.clientWidth  || container.getBoundingClientRect().width  || window.innerWidth  || 1200;
+      const H = container.clientHeight || container.getBoundingClientRect().height || window.innerHeight || 800;
 
-    console.log('[Graph] Rendering with', nodes.length, 'nodes and', links.length, 'links');
-    console.log('[Graph] Canvas size:', W, 'x', H);
+      console.log('[Graph] Rendering with', nodes.length, 'nodes and', links.length, 'links');
+      console.log('[Graph] Canvas size:', W, 'x', H);
 
-    const nodeData = nodes.map(n => ({ ...n }));
-    const linkData = links.map(l => ({ ...l }));
+      const nodeData = nodes.map(n => ({ ...n }));
+      const linkData = links.map(l => ({ ...l }));
 
-    const svg = d3.select(container);
-    svg.selectAll("*").remove();
+      const svg = d3.select(container);
+      svg.selectAll("*").remove();
+      
+      // FIX #3: Force SVG to fill container via CSS
+      svg.style("width", "100%").style("height", "100%");
 
     // Add SVG filters for node glow effects
     const defs = svg.append("defs");
@@ -482,12 +488,14 @@ export default function Graph({
       nodeSel.attr("transform", d => `translate(${d.x},${d.y})`);
     });
 
-    return () => {
-      simulation.stop();
-      timersRef.current.forEach(clearTimeout);
-      svg.selectAll("*").remove();
-    };
+      return () => {
+        simulation.stop();
+        timersRef.current.forEach(clearTimeout);
+        svg.selectAll("*").remove();
+      };
+    }, 100); // wait 100ms for DOM layout to complete
 
+    return () => clearTimeout(timer);
   }, [nodes, links, onNodeClick]);
 
   // Re-apply risk filter when it changes
